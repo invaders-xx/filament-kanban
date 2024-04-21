@@ -2,14 +2,14 @@
 
 namespace Mokhosh\FilamentKanban\Pages;
 
-use Filament\Forms\Contracts\HasForms;
 use Filament\Pages\Page;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Mokhosh\FilamentKanban\Concerns\HasEditRecordModal;
 use Mokhosh\FilamentKanban\Concerns\HasStatusChange;
 use UnitEnum;
 
-class KanbanBoard extends Page implements HasForms
+class KanbanBoard extends Page
 {
     use HasEditRecordModal;
     use HasStatusChange;
@@ -41,7 +41,7 @@ class KanbanBoard extends Page implements HasForms
 
     protected function records(): Collection
     {
-        return static::$model::query()
+        return $this->getEloquentQuery()
             ->when(method_exists(static::$model, 'scopeOrdered'), fn ($query) => $query->ordered())
             ->get();
     }
@@ -63,12 +63,17 @@ class KanbanBoard extends Page implements HasForms
 
     protected function filterRecordsByStatus(Collection $records, array $status): array
     {
-        $statusIsCastToEnum = $records->first()?->status instanceof UnitEnum;
+        $statusIsCastToEnum = $records->first()?->getAttribute(static::$recordStatusAttribute) instanceof UnitEnum;
 
         $filter = $statusIsCastToEnum
             ? static::$statusEnum::from($status['id'])
             : $status['id'];
 
         return $records->where(static::$recordStatusAttribute, $filter)->all();
+    }
+
+    protected function getEloquentQuery(): Builder
+    {
+        return static::$model::query();
     }
 }

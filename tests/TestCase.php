@@ -70,12 +70,26 @@ class TestCase extends Orchestra
             $table->timestamps();
         });
 
+        $app['db']->connection()->getSchemaBuilder()->create('ulid_tasks', function (Blueprint $table) {
+            $table->ulid();
+            $table->string('title');
+            $table->string('status');
+            $table->integer('order_column');
+            $table->timestamps();
+        });
+
         $app['db']->connection()->getSchemaBuilder()->create('users', function (Blueprint $table) {
             $table->id();
             $table->string('email');
+            $table->string('password');
             $table->string('name');
         });
 
-        $this->admin = User::create(['email' => 'admin@domain.com', 'name' => 'Admin']);
+        $app['db']->connection()->getSchemaBuilder()->create('task_user', function (Blueprint $table) {
+            $table->foreignId('task_id');
+            $table->foreignId('user_id');
+        });
+
+        $this->admin = User::create(['email' => 'admin@domain.com', 'password' => 'password', 'name' => 'Admin']);
     }
 }

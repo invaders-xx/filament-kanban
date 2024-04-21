@@ -126,6 +126,31 @@ public function onSortChanged(int $recordId, string $status, array $orderedIds):
 }
 ```
 
+### Customizing the Status Enum
+
+If you add `IsKanbanStatus` to your status `Enum`, this trait adds a static `statuses()` method to your enum that will return the statuses defined in your enum in the appropriate format.
+
+If you don't want all cases of your enum to be present on the board, you can override this method and return a subset of cases:
+
+```php
+public static function kanbanCases(): array
+{
+    return [
+        static::CaseOne,
+        static::CaseThree,
+    ];
+}
+```
+
+`IsKanbanStatus` uses the `value` of your cases for the `title` of your statuses. You can customize how the title is retrieved as well:
+
+```php
+public function getTitle(): string
+{
+    return __($this->label());
+}
+```
+
 ## Edit modal
 
 ### Disabling the modal
@@ -170,7 +195,7 @@ The `data` array contains the form data, and the `state` array contains the full
 
 ### Customizing modal's appearance
 
-You can customize modal's title, size and the labels for save and cancel buttons:
+You can customize modal's title, size and the labels for save and cancel buttons, or use Filament's slide-over instead of a modal:
 
 ```php
 protected string $editModalTitle = 'Edit Record';
@@ -180,6 +205,8 @@ protected string $editModalWidth = '2xl';
 protected string $editModalSaveButtonLabel = 'Save';
 
 protected string $editModalCancelButtonLabel = 'Cancel';
+
+protected bool $editModalSlideOver = true;
 ```
 
 ## Customization
@@ -231,7 +258,7 @@ protected static string $scriptsView = 'filament-kanban::kanban-scripts';
 
 ### Flashing Recently Updated Records
 
-You might want to have some visual feedback when a record has been updated. All you need to do is to use the `HasRecentUpdateIndication` trait in your `Model`.
+You get some visual feedback when a record has been just updated.
 
 If you're also using [Spatie Eloquent Sortable](https://github.com/spatie/eloquent-sortable) you might experience all records being flashed at the same time. This is because [Eloquent Sortable](https://github.com/spatie/eloquent-sortable) updates the `order_column` of all models when the sort changes.
 In order to fix that, publish their config and set `ignore_timestamps` to `true`.
@@ -286,6 +313,7 @@ Please review [our security policy](../../security/policy) on how to report secu
 
 ## TODO
 
+- [ ] remove deprecated recently updated trait
 - [ ] stop passing record to view for recordClick
 - [ ] use filament actions for edit modal
 

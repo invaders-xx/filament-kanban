@@ -11,9 +11,11 @@ trait HasEditRecordModal
 
     public ?array $editModalFormState = [];
 
-    public ?int $editModalRecordId = null;
+    public null | int | string $editModalRecordId = null;
 
     protected string $editModalTitle = 'Edit Record';
+
+    protected bool $editModalSlideOver = false;
 
     protected string $editModalWidth = '2xl';
 
@@ -26,7 +28,7 @@ trait HasEditRecordModal
         $this->form->fill();
     }*/
 
-    public function recordClicked(int $recordId, array $data): void
+    public function recordClicked(int | string $recordId, array $data): void
     {
         $this->editModalRecordId = $recordId;
 
@@ -55,20 +57,21 @@ trait HasEditRecordModal
     {
         return $form
             ->schema($this->getEditModalFormSchema($this->editModalRecordId))
-            ->statePath('editModalFormState');
+            ->statePath('editModalFormState')
+            ->model($this->editModalRecordId ? static::$model::find($this->editModalRecordId) : static::$model);
     }
 
-    protected function getEditModalRecordData(int $recordId, array $data): array
+    protected function getEditModalRecordData(int | string $recordId, array $data): array
     {
-        return static::$model::find($recordId)->toArray();
+        return $this->getEloquentQuery()->find($recordId)->toArray();
     }
 
-    protected function editRecord(int $recordId, array $data, array $state): void
+    protected function editRecord(int | string $recordId, array $data, array $state): void
     {
-        static::$model::find($recordId)->update($data);
+        $this->getEloquentQuery()->find($recordId)->update($data);
     }
 
-    protected function getEditModalFormSchema(?int $recordId): array
+    protected function getEditModalFormSchema(null | int | string $recordId): array
     {
         return [
             TextInput::make(static::$recordTitleAttribute),
@@ -78,6 +81,11 @@ trait HasEditRecordModal
     protected function getEditModalTitle(): string
     {
         return $this->editModalTitle;
+    }
+
+    protected function getEditModalSlideOver(): bool
+    {
+        return $this->editModalSlideOver;
     }
 
     protected function getEditModalWidth(): string
